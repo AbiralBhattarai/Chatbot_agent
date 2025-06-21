@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 from langchain import hub
 from langchain.agents import Tool, AgentExecutor, initialize_agent, AgentType
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.chains import RetrievalQA
 from langchain_chroma import Chroma
@@ -11,6 +11,7 @@ from google.cloud import firestore
 from langchain_google_firestore import FirestoreChatMessageHistory
 from verify_email import verify_email
 from pydantic import BaseModel, Field
+from langchain.memory import ConversationBufferMemory
 
 # load environment variables
 load_dotenv()
@@ -30,7 +31,7 @@ COLLECTION_NAME_2 = "customer_appointments"
 
 client = firestore.Client(project=PROJECT_ID)
 
-chat_history = FirestoreChatMessageHistory(
+chat_history_store = FirestoreChatMessageHistory(
     session_id=SESSION_ID,
     collection=COLLECTION_NAME_1,
     client=client
@@ -41,9 +42,14 @@ user_appointments = FirestoreChatMessageHistory(
     collection=COLLECTION_NAME_2,
     client=client
 )
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True
+)
+
 
 #initialize llm and embedding model
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+llm = ChatGoogleGenerativeAI(model='models/gemini-2.0-flash')
 embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
 #initialize the chroma vectorstore
@@ -63,16 +69,15 @@ def search_documents(query):
 search_tool = Tool(
     name="search_documents",
     func=search_documents,
-    description="Use this tool to answer user questions based on uploaded documents."
+    description="Useful for answering questions by retrieving relevant information from uploaded or indexed documents(pdf,txt). Use this when the user's query requires facts or details that may be found in those documents."
 )
-
 # tool to get current datetime
-def get_current_time():
+def get_date(_=""):
     return f"The current system time is {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}."
 
 date_tool = Tool(
-    name="get_current_date_time",
-    func=get_current_time,
+    name="get_date",
+    func=get_date,
     description="Use this to get the current system time and date."
 )
 
@@ -81,7 +86,7 @@ def book_appointment(query):
     
     #extract name, email, phonenumber and appointment date using llm
     detail_extractor = llm.with_structured_output(UserDetails)
-    details = detail_extractor.invoke(query)
+    details = detail_extractor.invoke(query + f" current time: {get_date()}")
 
     #validate the email and phone num
     email = details.email
@@ -107,7 +112,8 @@ tools = [search_tool, book_tool, date_tool]
 agent = initialize_agent(
     tools=tools,
     llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+    memory=memory,
     verbose=True
 )
 
@@ -119,6 +125,10 @@ while True:
     if user_input.lower() in ['quit', 'exit', 'bye']:
         print("ChatBot: Thank you for using the chatbot!")
         break
-
+    
+    
     result = agent.invoke(user_input)
+
+    chat_history_store.add_user_message(HumanMessage(content=user_input))
+    chat_history_store.add_ai_message(AIMessage(content=result['output']))
     print("ChatBot:", result['output'])
