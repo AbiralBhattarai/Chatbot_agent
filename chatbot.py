@@ -33,8 +33,8 @@ def get_system_time(format: str = "%Y-%m-%d %H:%M:%S"):
 load_dotenv()
 
 #initializing firestore
-PROJECT_ID = "langchain-15031"
-SESSION_ID = "user_session_1"
+PROJECT_ID = os.getenv("PROJECT_ID")
+SESSION_ID = os.getenv("SESSION_ID")
 COLLECTION_NAME_1 = "chat_history"
 COLLECTION_NAME_2 = "customer_appointments"
 
