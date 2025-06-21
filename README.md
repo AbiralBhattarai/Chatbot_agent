@@ -38,14 +38,23 @@ python chatagent.py
 
 4. To exit the chatbot, type `quit`, `exit`, `end`, or `bye`.
 
-## API
+## Technologies Used
 
-The chatbot uses the following APIs and tools:
+- [Google Generative AI](https://ai.google.dev/)  
+  Used for natural language understanding and generation via the Gemini (Generative AI) model.
 
-- **Google Generative AI**: The chatbot uses the Google Generative AI model for natural language processing and generation.
-- **Google Firestore**: The chatbot uses Google Firestore to store the chat history and customer appointment details.
-- **Chroma**: The chatbot uses the Chroma vector store to store and retrieve relevant documents.
-- **Verify-email**: Used to verify the email.
+- [LangChain](https://docs.langchain.com/)  
+  A framework for building applications with LLMs, used to orchestrate tools, memory, agents, and prompts.
+
+- [Google Firestore](https://firebase.google.com/docs/firestore)  
+  A scalable NoSQL cloud database used to store chat history and customer appointment details in real time.
+
+- [Chroma](https://docs.trychroma.com/)  
+  An open-source embedding-based vector database for storing and retrieving relevant documents using similarity search.
+
+- [verify-email](https://pypi.org/project/verify-email/)  
+  A Python package used to verify and validate email addresses before processing.
+
 
 ## Contributing
 
