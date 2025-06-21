@@ -10,6 +10,8 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 load_dotenv()
+
+
 llm = ChatGoogleGenerativeAI(model = "gemini-2.0-flash")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,27 +27,41 @@ retriever = db.as_retriever(
         search_kwargs={"k":5,"score_threshold":0.5}
 )
 
-print("\nDocument Search Chatbot: \n")
+print("\nDocument Search and Appointment Booking Chatbot: \n")
 
 chat_history = []
 chat_history.append(("system","You are a helpful chatbot that answers users query based on the provided documents."))
+
+classification_prompt_template = ChatPromptTemplate.from_messages([
+    ('system','Classify user input:'),
+    ('human',"Classify this query into either document_search or book_appointment or not_sure: {query}.The only answers should be one word: Either document_search or book_appointment or not_sure.")
+])
+
+classification_chain = classification_prompt_template|llm|StrOutputParser()
+
 while True:
     query = input("You:")
     if query.lower() in ['quit','exit','end','bye']:
         print('Thank you for using the chatbot!')
         break
-    relevant_docs = retriever.invoke(query)
-    combined_input = (
-        "Here are some documents that might help answer the user query:" + 
-        query + "\n\nRelevant docs:\n\n".join([doc.page_content for doc in relevant_docs]) + "\n\n Please answer the query based on above docs\n\n"
-        + "If unsure about the answer, reply with I'm not sure about that."
-    )
-    human_message = HumanMessage(content=combined_input)
-    chat_history.append(human_message)
-    result = llm.invoke(chat_history)
-    response = result.content
-    chat_history.append(AIMessage(content=response))
-    print("ChatBot: ",response)
+    response = classification_chain.invoke({"query": query})
+    print(response)
+    if response =='document_search':
+        relevant_docs = retriever.invoke(query)
+        combined_input = (
+            "Here are some documents that might help answer the user query:" + 
+            query + "\n\nRelevant docs:\n\n".join([doc.page_content for doc in relevant_docs]) + "\n\n Please answer the query based on above docs\n\n"
+            + "If unsure about the answer, reply with I'm not sure about that."
+        )
+        human_message = HumanMessage(content=combined_input)
+        chat_history.append(human_message)
+        result = llm.invoke(chat_history)
+        response = result.content
+        chat_history.append(AIMessage(content=response))
+        print("ChatBot: ",response)
+    elif(response == 'book_appointment'):
+        print("This feature is not available yet!")
+    else:
+        print("I'm not sure about that.")
 
 
-    
