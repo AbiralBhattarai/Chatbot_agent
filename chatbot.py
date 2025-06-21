@@ -13,6 +13,9 @@ from pydantic import BaseModel,Field
 from datetime import datetime
 from verify_email import verify_email
 
+
+
+#pydantic class  to get structred ouput from llm incase of booking appointment.
 class UserDetails(BaseModel):
     """Information about the customer."""
     name:str = Field(description="The name of the user")
@@ -20,12 +23,16 @@ class UserDetails(BaseModel):
     phone: str = Field(description="The phone number of the user")
     appointment_date: str = Field(description="Date of the appointment.")
 
+#tool to get current system time so that llm can deterime the correct date of the booking
 def get_system_time(format: str = "%Y-%m-%d %H:%M:%S"):
         """Get the current system time in the given format"""
         return datetime.now().strftime(format)
      
+#load the env variables
 
 load_dotenv()
+
+#initializing firestore
 PROJECT_ID = "langchain-15031"
 SESSION_ID = "user_session_1"
 COLLECTION_NAME_1 = "chat_history"
@@ -48,14 +55,17 @@ user_appointments = FirestoreChatMessageHistory(
         client=client
 )
 
+#initialize llm and embedding model
 llm = ChatGoogleGenerativeAI(model = "gemini-2.0-flash")
+embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
 
+#Chroma vectorstore initialization
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 db_dir = os.path.join(current_dir,"db")
 persistent_directory = os.path.join(db_dir,"chroma_db")
 
-embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
+
 
 db = Chroma(persist_directory=persistent_directory,embedding_function=embeddings)
 retriever = db.as_retriever(
@@ -63,9 +73,7 @@ retriever = db.as_retriever(
         search_kwargs={"k":5,"score_threshold":0.5}
 )
 
-print("\nDocument Search and Appointment Booking Chatbot: \n")
-
-
+#prompt template to classify if the user query is about searching documents or booking an appointment
 classification_prompt_template = ChatPromptTemplate.from_messages([
     ('system','Classify user input:'),
     ('human',"Classify this query into either document_search or book_appointment or not_sure: {query}.The only answers should be one word: Either document_search or book_appointment or not_sure.")
@@ -73,14 +81,17 @@ classification_prompt_template = ChatPromptTemplate.from_messages([
 
 classification_chain = classification_prompt_template|llm|StrOutputParser()
 
+#chatbot loop
+print("\nDocument Search and Appointment Booking Chatbot: \n")
 while True:
     query = input("You:")
-    if query.lower() in ['quit','exit','end','bye']:
+    if query.lower() in ['quit','exit','end','bye']: #condition to exit chat loop
         print('Thank you for using the chatbot!')
         break
-    response = classification_chain.invoke({"query": query})
+    response = classification_chain.invoke({"query": query}) #classifies the user query into document_search or book_appointment
     print(response)
     if response =='document_search':
+        #document search block
         relevant_docs = retriever.invoke(query)
         combined_input = (
             "Here are some documents that might help answer the user query:" + 
@@ -94,6 +105,7 @@ while True:
         chat_history.add_ai_message(AIMessage(content=response))
         print("ChatBot: ",response)
     elif(response == 'book_appointment'):
+        #book appointment block
         details = input("Enter your name,email,phone_number and appointment date:")
         messages = [
             ("system", f"You are an assistant that extracts structured user details."),
@@ -120,5 +132,6 @@ while True:
         print("\nAppointment_booked!!\n\nAppointment Details:\n"+formatted+'\n\n')
 
     else:
+        #block to return msg to user if llm fails to classify the message into either of the provied classe.
         print("I'm not sure about that.")
 
