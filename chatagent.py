@@ -23,8 +23,8 @@ class UserDetails(BaseModel):
     appointment_date: str = Field(description="Date of the appointment.")
 
 #firestore steup
-PROJECT_ID = "langchain-15031"
-SESSION_ID = "user_session_1"
+PROJECT_ID = os.getenv("PROJECT_ID")
+SESSION_ID = os.getenv("SESSION_ID")
 COLLECTION_NAME_1 = "chat_history"
 COLLECTION_NAME_2 = "customer_appointments"
 
