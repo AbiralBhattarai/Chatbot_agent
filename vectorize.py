@@ -47,4 +47,4 @@ if not os.path.exists(persistent_directory):
     print("\nVectores created and stored in DB")
 
 else:
-    print("\nVector store already exists\n")
+    print("\nVector store already exists.\n")
