@@ -34,7 +34,7 @@ python chatagent.py
 
 3. The chatbot supports the following functionalities:
    - **Document Search**: The chatbot can search for relevant documents based on your query and provide the information from those documents.
-   - **Appointment Booking**: The chatbot can help you book an appointment by extracting the necessary details (name, email, phone number, and appointment date) from your input.
+   - **Appointment Booking**: The chatbot can help you book an appointment by extracting the necessary details (name, email, phone number, and appointment date) from your input. You can type in the date as Next Monday,etc and the chatbot will use the date_tool to find the accurate date.
 
 4. To exit the chatbot, type `quit`, `exit`, `end`, or `bye`.
 
