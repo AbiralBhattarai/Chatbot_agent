@@ -4,6 +4,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import TextLoader,PyPDFLoader
+from huggingface_hub import login
 
 #loading the env variables
 load_dotenv()
@@ -13,7 +14,6 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 books_dir = os.path.join(current_dir,"docs")
 db_dir = os.path.join(current_dir,"db")
 persistent_directory = os.path.join(db_dir,"chroma_db")
-
 
 if not os.path.exists(persistent_directory):
     #check if vectorstore directory exists
@@ -42,7 +42,7 @@ if not os.path.exists(persistent_directory):
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=50) #doc splitter
     docs = text_splitter.split_documents(documents) #splitting the document into chunks with 50 characters overlap between chunks
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embeddings-001")#generate vectors
+    embeddings =GoogleGenerativeAIEmbeddings(model="models/embedding-001")#generate vectors
     db = Chroma.from_documents(docs,embeddings,persist_directory=persistent_directory)#store the vectors in the chroma vectorstore
     print("\nVectores created and stored in DB")
 
