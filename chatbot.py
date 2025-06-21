@@ -1,9 +1,13 @@
+import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
 from langchain_chroma import Chroma
-import os
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda,RunnableBranch
+from langchain_core.prompts import ChatPromptTemplate
+
 
 load_dotenv()
 llm = ChatGoogleGenerativeAI(model = "gemini-2.0-flash")
@@ -44,3 +48,4 @@ while True:
     print("ChatBot: ",response)
 
 
+    
