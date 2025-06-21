@@ -56,7 +56,7 @@ user_appointments = FirestoreChatMessageHistory(
 )
 
 #initialize llm and embedding model
-llm = ChatGoogleGenerativeAI(model = "gemini-2.0-flash")
+llm = ChatGoogleGenerativeAI(model = "models/gemini-2.0-flash")
 embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
 
 #Chroma vectorstore initialization
