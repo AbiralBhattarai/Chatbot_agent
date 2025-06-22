@@ -24,19 +24,20 @@ pip install -r requirements.txt
 4. Ensure you have the necessary Google Cloud credentials set up for Firestore and Google Generative AI.
 
 ## Usage
+1. Additional txt or pdf documents can be added to the docs folder. Run the `vectorize.py` script to vectorize the documents which enables the chatbot to search the documents.
 
-1. Run the `chatagent.py ` script to start the chatbot:
+2. Run the `chatagent.py ` script to start the chatbot:
 ```
 python chatagent.py
 ```
 
-2. The chatbot will start running, and you can interact with it by typing your messages in the console.
+3. The chatbot will start running, and you can interact with it by typing your messages in the console.
 
-3. The chatbot supports the following functionalities:
+4. The chatbot supports the following functionalities:
    - **Document Search**: The chatbot can search for relevant documents based on your query and provide the information from those documents.
    - **Appointment Booking**: The chatbot can help you book an appointment by extracting the necessary details (name, email, phone number, and appointment date) from your input. You can type in the date as Next Monday,etc and the chatbot will use the date_tool to find the accurate date.
 
-4. To exit the chatbot, type `quit`, `exit`, `end`, or `bye`.
+5. To exit the chatbot, type `quit`, `exit`, `end`, or `bye`.
 
 ## Technologies Used
 
